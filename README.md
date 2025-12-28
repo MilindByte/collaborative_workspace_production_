@@ -143,18 +143,37 @@ A backend service for a real-time collaborative workspace, supporting secure aut
    npm run start:dev
    ```
 
-The API will be available at `http://localhost:3000`
+The API will be available at `https://cw1-one.vercel.app`
 
 ### Quick Start URLs
 
-- **API Documentation (Swagger):** http://localhost:3000/v1/api/docs
-- **Health Check:** http://localhost:3000/v1/health
-- **Metrics Endpoint:** http://localhost:3000/v1/metrics
-- **WebSocket Endpoint:** ws://localhost:3000/collaboration
+- **API Documentation (Swagger):** https://cw1-one.vercel.app/v1/api/docs
+- **Health Check:** https://cw1-one.vercel.app/v1/health
+- **Metrics Endpoint:** https://cw1-one.vercel.app/v1/metrics
+- **WebSocket Endpoint:** wss://cw1-one.vercel.app/collaboration
 
 ## 📖 API Documentation
 
-Full API documentation is available at `/v1/api/docs` when the server is running.
+### View Interactive API Documentation
+
+> **Note:** Due to Vercel serverless limitations, Swagger UI (`/v1/api/docs`) is not available. Use Swagger Editor instead.
+
+**Quick Start:**
+1. Go to [Swagger Editor](https://editor.swagger.io)
+2. Click **File** → **Import URL**
+3. Enter: `https://cw1-one.vercel.app/v1/api/docs-json`
+4. Test endpoints interactively
+
+**Alternative:** Import the OpenAPI spec in Postman or Insomnia
+- **OpenAPI JSON:** https://cw1-one.vercel.app/v1/api/docs-json
+
+**Live Endpoints:**
+- **Health Check:** https://cw1-one.vercel.app/v1/health
+- **Metrics:** https://cw1-one.vercel.app/v1/metrics
+
+Full API testing guide: [API_TESTING.md](./API_TESTING.md)
+
+
 
 ### Main Endpoints
 
@@ -194,7 +213,7 @@ Full API documentation is available at `/v1/api/docs` when the server is running
 Connect to `/collaboration` namespace with JWT token:
 
 ```javascript
-const socket = io('http://localhost:3000/collaboration', {
+const socket = io('https://cw1-one.vercel.app/collaboration', {
   auth: {
     token: 'YOUR_JWT_ACCESS_TOKEN'
   }
@@ -254,7 +273,7 @@ Jobs are processed asynchronously using BullMQ with Redis.
 ### Creating a Job
 
 ```bash
-curl -X POST http://localhost:3000/jobs \
+curl -X POST https://cw1-one.vercel.app/v1/jobs \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
