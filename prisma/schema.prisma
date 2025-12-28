@@ -1,0 +1,136 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  COLLABORATOR
+  VIEWER
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  password      String
+  name          String
+  refreshToken  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  workspaceMemberships WorkspaceMember[]
+  projectMemberships   ProjectMember[]
+  invitations          Invitation[]
+  jobs                 Job[]
+
+  @@map("users")
+}
+
+model Workspace {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members  WorkspaceMember[]
+  projects Project[]
+
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id          String   @id @default(uuid())
+  role        Role     @default(VIEWER)
+  joinedAt    DateTime @default(now())
+
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+  @@map("workspace_members")
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  members ProjectMember[]
+
+  @@map("projects")
+}
+
+model ProjectMember {
+  id       String   @id @default(uuid())
+  role     Role     @default(VIEWER)
+  joinedAt DateTime @default(now())
+
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+  @@map("project_members")
+}
+
+model Invitation {
+  id          String   @id @default(uuid())
+  email       String
+  role        Role     @default(VIEWER)
+  status      String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  invitedBy   String
+  inviter     User     @relation(fields: [invitedBy], references: [id], onDelete: Cascade)
+  workspaceId String?
+  projectId   String?
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+
+  @@map("invitations")
+}
+
+model Job {
+  id          String    @id @default(uuid())
+  type        String    // e.g., "CODE_EXECUTION", "DATA_PROCESSING"
+  payload     String    // JSON stringified payload
+  status      JobStatus @default(PENDING)
+  result      String?   // JSON stringified result
+  error       String?
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(3)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  idempotencyKey String? @unique
+
+  @@map("jobs")
+}
