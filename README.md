@@ -303,6 +303,61 @@ npm run test:cov
 
 ## 🐳 Deployment
 
+### Production (Vercel)
+
+**Live Deployment:** [https://cw1-one.vercel.app](https://cw1-one.vercel.app)
+
+This application is deployed on Vercel with:
+- ✅ **PostgreSQL:** Neon (cloud-hosted)
+- ✅ **Redis:** Upstash (cloud-hosted)
+- ✅ **Serverless Functions:** Vercel Edge Network
+- ✅ **Auto-deployment:** Connected to GitHub main branch
+
+#### Quick Deploy to Vercel
+
+1. **Push to GitHub:**
+   ```bash
+   git add .
+   git commit -m "Deploy to Vercel"
+   git push origin main
+   ```
+
+2. **Configure Environment Variables in Vercel Dashboard:**
+   - Go to [Vercel Dashboard](https://vercel.com/dashboard) → Your Project → Settings → Environment Variables
+   - Add all variables from `.env.example` for Production, Preview, and Development
+
+3. **Deploy:**
+   ```bash
+   vercel --prod
+   ```
+   Or wait for automatic deployment from GitHub
+
+#### Environment Variables (Vercel)
+
+Required variables in Vercel Dashboard:
+
+```bash
+# Database
+DATABASE_URL=postgresql://user:pass@host/db?sslmode=require
+
+# Redis (Optional - app handles gracefully if not set)
+REDIS_URL=rediss://default:token@host:6379
+
+# JWT Secrets (CRITICAL - Use strong random strings)
+JWT_ACCESS_SECRET=your-super-secret-min-32-chars
+JWT_REFRESH_SECRET=your-super-secret-min-32-chars
+JWT_ACCESS_EXPIRATION=15m
+JWT_REFRESH_EXPIRATION=7d
+
+# Application
+NODE_ENV=production
+PORT=3000
+THROTTLE_TTL=60
+THROTTLE_LIMIT=10
+```
+
+**Complete deployment guide:** [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md)
+
 ### Docker Compose (Local/Development)
 
 ```bash
@@ -313,7 +368,7 @@ docker-compose up --build
 docker-compose down
 ```
 
-### Build for Production
+### Build for Production (Local Testing)
 
 ```bash
 # Build the application
@@ -323,14 +378,18 @@ npm run build
 npm run start:prod
 ```
 
-### Environment Variables (Production)
+### Deployment Checklist
 
-Ensure the following are set securely in production:
+Before deploying to production:
 
-- `DATABASE_URL` - PostgreSQL connection string
-- `REDIS_HOST` & `REDIS_PORT` - Redis configuration
-- `JWT_ACCESS_SECRET` & `JWT_REFRESH_SECRET` - Strong random secrets (min 32 chars)
-- `NODE_ENV=production`
+- [ ] All tests passing (`npm run test`)
+- [ ] Build succeeds locally (`npm run build`)
+- [ ] Environment variables configured in Vercel
+- [ ] Database migrations run (`npx prisma migrate deploy`)
+- [ ] API documentation accessible
+- [ ] Health check endpoint responding
+- [ ] SSL/TLS certificates active (handled by Vercel)
+
 
 
 
